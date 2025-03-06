@@ -3,9 +3,23 @@ import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { compare } from 'bcrypt';
 
+if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
+  throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL');
+}
+
+if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+  throw new Error('Missing SUPABASE_SERVICE_ROLE_KEY');
+}
+
 const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY,
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  }
 );
 
 const handler = NextAuth({
@@ -21,26 +35,33 @@ const handler = NextAuth({
           throw new Error('Email ve şifre gerekli');
         }
 
-        const { data: admin, error } = await supabase
-          .from('admins')
-          .select('*')
-          .eq('email', credentials.email)
-          .single();
+        try {
+          const { data: admin, error } = await supabase
+            .from('admins')
+            .select('*')
+            .eq('email', credentials.email)
+            .single();
 
-        if (error || !admin) {
-          throw new Error('Geçersiz email veya şifre');
+          if (error || !admin) {
+            console.error('Admin fetch error:', error);
+            throw new Error('Geçersiz email veya şifre');
+          }
+
+          const isValid = await compare(credentials.password, admin.password_hash);
+
+          if (!isValid) {
+            throw new Error('Geçersiz email veya şifre');
+          }
+
+          return {
+            id: admin.id,
+            email: admin.email,
+            name: admin.email.split('@')[0]
+          };
+        } catch (error) {
+          console.error('Auth error:', error);
+          throw error;
         }
-
-        const isValid = await compare(credentials.password, admin.password_hash);
-
-        if (!isValid) {
-          throw new Error('Geçersiz email veya şifre');
-        }
-
-        return {
-          id: admin.id,
-          email: admin.email,
-        };
       }
     })
   ],
@@ -49,11 +70,13 @@ const handler = NextAuth({
   },
   session: {
     strategy: 'jwt',
+    maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
+        token.email = user.email;
       }
       return token;
     },
@@ -64,6 +87,7 @@ const handler = NextAuth({
       return session;
     },
   },
+  secret: process.env.NEXTAUTH_SECRET
 });
 
 export { handler as GET, handler as POST }; 
