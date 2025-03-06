@@ -11,6 +11,7 @@ import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { toast } from 'react-hot-toast';
 import ReactDOM from 'react-dom/client';
+import ReactDOMServer from 'react-dom/server';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -239,12 +240,8 @@ export default function QRCodeList({ campaignId }: QRCodeListProps) {
     try {
       const url = getQRCodeUrl(qrCode.slug);
       
-      // QR kodu oluştur
-      const qrCodeContainer = document.createElement('div');
-      const root = ReactDOM.createRoot(qrCodeContainer);
-      
-      // QR kodu render et
-      root.render(
+      // QR kodu SVG olarak oluştur
+      const qrCodeSvg = (
         <QRCodeSVG
           value={url}
           size={1024}
@@ -257,35 +254,40 @@ export default function QRCodeList({ campaignId }: QRCodeListProps) {
           }}
         />
       );
+
+      // SVG'yi string'e dönüştür
+      const svgString = ReactDOMServer.renderToString(qrCodeSvg);
       
-      // SVG elementini al
-      const svgElement = qrCodeContainer.querySelector('svg');
-      if (!svgElement) {
-        throw new Error('SVG element not found');
-      }
+      // SVG'yi data URL'e dönüştür
+      const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+      const svgUrl = URL.createObjectURL(svgBlob);
       
       // SVG'yi PNG'ye dönüştür
-      const svgString = new XMLSerializer().serializeToString(svgElement);
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
       const img = new Image();
+      img.src = svgUrl;
       
-      img.onload = () => {
-        canvas.width = 1024;
-        canvas.height = 1024;
-        ctx?.drawImage(img, 0, 0);
-        
-        // PNG olarak indir
-        const pngUrl = canvas.toDataURL('image/png');
-        const link = document.createElement('a');
-        link.href = pngUrl;
-        link.download = `qr-${qrCode.slug}.png`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      };
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = reject;
+      });
       
-      img.src = 'data:image/svg+xml;base64,' + btoa(svgString);
+      const canvas = document.createElement('canvas');
+      canvas.width = 1024;
+      canvas.height = 1024;
+      const ctx = canvas.getContext('2d');
+      ctx?.drawImage(img, 0, 0);
+      
+      // PNG'yi indir
+      const pngUrl = canvas.toDataURL('image/png');
+      const link = document.createElement('a');
+      link.href = pngUrl;
+      link.download = `qr-${qrCode.slug}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Cleanup
+      URL.revokeObjectURL(svgUrl);
     } catch (error) {
       console.error('Error downloading QR code:', error);
       toast.error('QR kod indirilirken bir hata oluştu');
@@ -298,15 +300,13 @@ export default function QRCodeList({ campaignId }: QRCodeListProps) {
       if (selectedCodes.length === 0) return;
 
       const zip = new JSZip();
+      
+      // Her bir QR kod için PNG oluştur
       const promises = selectedCodes.map(async (code) => {
         const url = getQRCodeUrl(code.slug);
         
-        // QR kodu oluştur
-        const qrCodeContainer = document.createElement('div');
-        const root = ReactDOM.createRoot(qrCodeContainer);
-        
-        // QR kodu render et
-        root.render(
+        // QR kodu SVG olarak oluştur
+        const qrCodeSvg = (
           <QRCodeSVG
             value={url}
             size={1024}
@@ -319,39 +319,45 @@ export default function QRCodeList({ campaignId }: QRCodeListProps) {
             }}
           />
         );
+
+        // SVG'yi string'e dönüştür
+        const svgString = ReactDOMServer.renderToString(qrCodeSvg);
         
-        // SVG elementini al
-        const svgElement = qrCodeContainer.querySelector('svg');
-        if (!svgElement) {
-          throw new Error('SVG element not found');
-        }
+        // SVG'yi data URL'e dönüştür
+        const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+        const svgUrl = URL.createObjectURL(svgBlob);
         
         // SVG'yi PNG'ye dönüştür
-        const svgString = new XMLSerializer().serializeToString(svgElement);
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
         const img = new Image();
+        img.src = svgUrl;
         
-        return new Promise((resolve, reject) => {
-          img.onload = () => {
-            canvas.width = 1024;
-            canvas.height = 1024;
-            ctx?.drawImage(img, 0, 0);
-            
-            // PNG'yi ZIP'e ekle
-            canvas.toBlob((blob) => {
-              if (blob) {
-                zip.file(`qr-${code.slug}.png`, blob);
-                resolve(true);
-              } else {
-                reject(new Error('Failed to convert canvas to blob'));
-              }
-            }, 'image/png');
-          };
-          
-          img.onerror = () => reject(new Error('Failed to load image'));
-          img.src = 'data:image/svg+xml;base64,' + btoa(svgString);
+        await new Promise((resolve, reject) => {
+          img.onload = resolve;
+          img.onerror = reject;
         });
+        
+        const canvas = document.createElement('canvas');
+        canvas.width = 1024;
+        canvas.height = 1024;
+        const ctx = canvas.getContext('2d');
+        ctx?.drawImage(img, 0, 0);
+        
+        // Canvas'ı blob'a dönüştür
+        const blob = await new Promise<Blob>((resolve, reject) => {
+          canvas.toBlob((blob) => {
+            if (blob) {
+              resolve(blob);
+            } else {
+              reject(new Error('Failed to convert canvas to blob'));
+            }
+          }, 'image/png');
+        });
+        
+        // Blob'u ZIP'e ekle
+        zip.file(`qr-${code.slug}.png`, blob);
+        
+        // Cleanup
+        URL.revokeObjectURL(svgUrl);
       });
 
       await Promise.all(promises);
