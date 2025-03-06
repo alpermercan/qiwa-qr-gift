@@ -245,36 +245,57 @@ export default function QRCodeList({ campaignId }: QRCodeListProps) {
       canvas.width = 1024;
       canvas.height = 1024;
       
-      // QR kodu canvas'a çiz
-      await QRCode.toCanvas(canvas, url, {
-        width: 1024,
-        margin: 4,
-        color: {
-          dark: '#000000',
-          light: '#ffffff',
-        },
-        errorCorrectionLevel: 'H',
-      });
-
-      // Logo ekle
       const ctx = canvas.getContext('2d');
       if (!ctx) {
         throw new Error('Canvas context not available');
       }
 
+      // Sarı arka plan ekle (Snapchat sarısı)
+      ctx.fillStyle = '#FFFC00';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Yuvarlatılmış köşeler için
+      ctx.beginPath();
+      const radius = 100; // köşe yuvarlaklık değeri
+      ctx.moveTo(radius, 0);
+      ctx.lineTo(canvas.width - radius, 0);
+      ctx.quadraticCurveTo(canvas.width, 0, canvas.width, radius);
+      ctx.lineTo(canvas.width, canvas.height - radius);
+      ctx.quadraticCurveTo(canvas.width, canvas.height, canvas.width - radius, canvas.height);
+      ctx.lineTo(radius, canvas.height);
+      ctx.quadraticCurveTo(0, canvas.height, 0, canvas.height - radius);
+      ctx.lineTo(0, radius);
+      ctx.quadraticCurveTo(0, 0, radius, 0);
+      ctx.closePath();
+      ctx.fill();
+      
+      // QR kodu canvas'a çiz
+      await QRCode.toCanvas(canvas, url, {
+        width: 800,
+        margin: 2,
+        color: {
+          dark: '#000000',
+          light: '#FFFC00', // Snapchat sarısı
+        },
+        errorCorrectionLevel: 'H',
+      });
+
+      // Logo ekle
       const logo = new Image();
       logo.src = '/images/logo/qiwa-logo.svg';
       
       await new Promise((resolve, reject) => {
         logo.onload = () => {
           // Logo'yu ortala
-          const logoSize = 100;
+          const logoSize = 150; // Logo boyutunu büyüttük
           const x = (canvas.width - logoSize) / 2;
           const y = (canvas.height - logoSize) / 2;
           
-          // Logo arkasına beyaz arka plan ekle
+          // Logo arkasına beyaz daire ekle
+          ctx.beginPath();
+          ctx.arc(canvas.width / 2, canvas.height / 2, logoSize / 1.8, 0, Math.PI * 2);
           ctx.fillStyle = '#ffffff';
-          ctx.fillRect(x - 10, y - 10, logoSize + 20, logoSize + 20);
+          ctx.fill();
           
           // Logo'yu çiz
           ctx.drawImage(logo, x, y, logoSize, logoSize);
@@ -313,36 +334,57 @@ export default function QRCodeList({ campaignId }: QRCodeListProps) {
         canvas.width = 1024;
         canvas.height = 1024;
         
-        // QR kodu canvas'a çiz
-        await QRCode.toCanvas(canvas, url, {
-          width: 1024,
-          margin: 4,
-          color: {
-            dark: '#000000',
-            light: '#ffffff',
-          },
-          errorCorrectionLevel: 'H',
-        });
-
-        // Logo ekle
         const ctx = canvas.getContext('2d');
         if (!ctx) {
           throw new Error('Canvas context not available');
         }
 
+        // Sarı arka plan ekle (Snapchat sarısı)
+        ctx.fillStyle = '#FFFC00';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Yuvarlatılmış köşeler için
+        ctx.beginPath();
+        const radius = 100;
+        ctx.moveTo(radius, 0);
+        ctx.lineTo(canvas.width - radius, 0);
+        ctx.quadraticCurveTo(canvas.width, 0, canvas.width, radius);
+        ctx.lineTo(canvas.width, canvas.height - radius);
+        ctx.quadraticCurveTo(canvas.width, canvas.height, canvas.width - radius, canvas.height);
+        ctx.lineTo(radius, canvas.height);
+        ctx.quadraticCurveTo(0, canvas.height, 0, canvas.height - radius);
+        ctx.lineTo(0, radius);
+        ctx.quadraticCurveTo(0, 0, radius, 0);
+        ctx.closePath();
+        ctx.fill();
+        
+        // QR kodu canvas'a çiz
+        await QRCode.toCanvas(canvas, url, {
+          width: 800,
+          margin: 2,
+          color: {
+            dark: '#000000',
+            light: '#FFFC00', // Snapchat sarısı
+          },
+          errorCorrectionLevel: 'H',
+        });
+
+        // Logo ekle
         const logo = new Image();
         logo.src = '/images/logo/qiwa-logo.svg';
         
         await new Promise((resolve, reject) => {
           logo.onload = () => {
             // Logo'yu ortala
-            const logoSize = 100;
+            const logoSize = 150;
             const x = (canvas.width - logoSize) / 2;
             const y = (canvas.height - logoSize) / 2;
             
-            // Logo arkasına beyaz arka plan ekle
+            // Logo arkasına beyaz daire ekle
+            ctx.beginPath();
+            ctx.arc(canvas.width / 2, canvas.height / 2, logoSize / 1.8, 0, Math.PI * 2);
             ctx.fillStyle = '#ffffff';
-            ctx.fillRect(x - 10, y - 10, logoSize + 20, logoSize + 20);
+            ctx.fill();
             
             // Logo'yu çiz
             ctx.drawImage(logo, x, y, logoSize, logoSize);
@@ -737,15 +779,17 @@ export default function QRCodeList({ campaignId }: QRCodeListProps) {
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-x-3">
-                      <div className="h-10 w-10 bg-white dark:bg-slate-800 rounded-lg p-1">
+                      <div className="h-10 w-10 bg-[#FFFC00] dark:bg-[#FFFC00] rounded-lg p-1">
                         <QRCodeSVG
                           value={getQRCodeUrl(qrCode.slug)}
                           size={32}
                           level="H"
+                          bgColor="#718C02"
+                          fgColor="#000000"
                           imageSettings={{
                             src: "/images/logo/qiwa-logo.svg",
-                            height: 8,
-                            width: 8,
+                            height: 10,
+                            width: 10,
                             excavate: true,
                           }}
                         />
