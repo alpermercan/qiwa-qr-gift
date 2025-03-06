@@ -123,14 +123,13 @@ export default function ParticipantForm({
       // Katılımcıyı oluştur
       const { data: participantData, error: participantError } = await supabase
         .from('participants')
-        .insert([
-          {
-            first_name: data.firstName.trim(),
-            last_name: data.lastName.trim(),
-            email: data.email.trim(),
-            phone: data.phone.trim(),
-          },
-        ])
+        .insert({
+          first_name: data.firstName.trim(),
+          last_name: data.lastName.trim(),
+          email: data.email.trim().toLowerCase(),
+          phone: data.phone.trim(),
+          created_at: new Date().toISOString()
+        })
         .select()
         .single();
 
@@ -150,35 +149,33 @@ export default function ParticipantForm({
         throw new Error('Katılımcı kaydı oluşturuldu ancak veri dönmedi');
       }
 
-      const participant = participantData;
-      console.log('Participant created:', participant);
-
       // Kampanya katılımını oluştur
-      const participationResult = await supabase
+      const { data: participationData, error: participationError } = await supabase
         .from('campaign_participations')
         .insert({
           campaign_id: campaignId,
-          participant_id: participant.id,
+          participant_id: participantData.id,
           qr_code_id: qrCodeId,
           is_used: false,
+          created_at: new Date().toISOString(),
           used_at: null
         })
-        .select('*')
+        .select()
         .single();
 
-      console.log('Participation creation result:', participationResult);
+      console.log('Participation creation result:', participationData);
 
-      if (participationResult.error) {
+      if (participationError) {
         // Kampanya güncelleme işlemini geri al
         await supabase.rpc('increment_campaign_uses', { campaign_id: campaignId });
         // Katılımcıyı sil
         await supabase
           .from('participants')
           .delete()
-          .eq('id', participant.id);
+          .eq('id', participantData.id);
           
-        console.error('Participation creation error:', participationResult.error);
-        throw new Error(`Kampanya katılımı kaydedilemedi: ${participationResult.error.message}`);
+        console.error('Participation creation error:', participationError);
+        throw new Error(`Kampanya katılımı kaydedilemedi: ${participationError.message}`);
       }
 
       // Son olarak QR kodu güncelle
@@ -187,15 +184,24 @@ export default function ParticipantForm({
         .update({ 
           is_used: true,
           used_at: new Date().toISOString(),
-          participant_id: participant.id
+          participant_id: participantData.id
         })
-        .eq('id', qrCodeId)
-        .select()
-        .single();
+        .eq('id', qrCodeId);
 
       if (qrUpdateError) {
         // Kampanya güncelleme işlemini geri al
         await supabase.rpc('increment_campaign_uses', { campaign_id: campaignId });
+        // Katılımı sil
+        await supabase
+          .from('campaign_participations')
+          .delete()
+          .eq('id', participationData.id);
+        // Katılımcıyı sil
+        await supabase
+          .from('participants')
+          .delete()
+          .eq('id', participantData.id);
+          
         console.error('QR code update error:', qrUpdateError);
         throw new Error(`QR kod güncellenemedi: ${qrUpdateError.message}`);
       }
@@ -246,7 +252,7 @@ export default function ParticipantForm({
               İndirim Kodunuz Hazır!
             </h3>
             <p className="mt-2 text-lg text-gray-600">
-              İndirim kodunuz başarıyla kaydedildi. Qiwa Coffee'de görüşmek üzere!
+              İndirim kodunuz başarıyla kaydedildi. {brandConfig.name}'de görüşmek üzere!
             </p>
 
             <div className="mt-8 pt-6 border-t border-gray-100">
