@@ -785,7 +785,7 @@ export default function QRCodeList({ campaignId }: QRCodeListProps) {
                           size={32}
                           level="H"
                           bgColor="#718C02"
-                          fgColor="#000000"
+                          fgColor="#FFFFFF"
                           imageSettings={{
                             src: "/images/logo/qiwa-logo.svg",
                             height: 10,
