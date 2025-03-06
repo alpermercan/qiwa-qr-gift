@@ -4,6 +4,7 @@ DROP TABLE IF EXISTS qr_codes CASCADE;
 CREATE TABLE qr_codes (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     campaign_id UUID NOT NULL REFERENCES campaigns(id) ON DELETE CASCADE,
+    participant_id UUID REFERENCES campaign_participants(id) ON DELETE SET NULL,
     slug VARCHAR(50) NOT NULL UNIQUE,
     is_used BOOLEAN DEFAULT FALSE,
     used_at TIMESTAMP WITH TIME ZONE,
@@ -13,6 +14,7 @@ CREATE TABLE qr_codes (
 
 -- Add indexes
 CREATE INDEX idx_qr_codes_campaign_id ON qr_codes(campaign_id);
+CREATE INDEX idx_qr_codes_participant_id ON qr_codes(participant_id);
 CREATE INDEX idx_qr_codes_slug ON qr_codes(slug);
 
 -- Add RLS policies

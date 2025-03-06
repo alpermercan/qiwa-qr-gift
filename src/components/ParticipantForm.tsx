@@ -183,8 +183,7 @@ export default function ParticipantForm({
         .from('qr_codes')
         .update({ 
           is_used: true,
-          used_at: new Date().toISOString(),
-          participant_id: participantData.id
+          used_at: new Date().toISOString()
         })
         .eq('id', qrCodeId);
 
