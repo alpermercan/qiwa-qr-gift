@@ -8,8 +8,14 @@ SELECT
     cp.phone,
     cp.created_at,
     cpart.created_at as participation_date,
+    c.id as campaign_id,
     c.name as campaign_name,
-    qr.slug as qr_code
+    c.discount_rate,
+    c.status as campaign_status,
+    qr.id as qr_code_id,
+    qr.slug as qr_code,
+    qr.is_used,
+    qr.used_at
 FROM campaign_participants cp
 JOIN campaign_participations cpart ON cpart.participant_id = cp.id
 JOIN campaigns c ON c.id = cpart.campaign_id
