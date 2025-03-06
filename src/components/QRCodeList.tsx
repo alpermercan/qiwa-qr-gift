@@ -251,7 +251,7 @@ export default function QRCodeList({ campaignId }: QRCodeListProps) {
       }
 
       // Sarı arka plan ekle (Snapchat sarısı)
-      ctx.fillStyle = '#FFFC00';
+      ctx.fillStyle = '#718C02';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       // Yuvarlatılmış köşeler için
@@ -275,7 +275,7 @@ export default function QRCodeList({ campaignId }: QRCodeListProps) {
         margin: 2,
         color: {
           dark: '#000000',
-          light: '#FFFC00', // Snapchat sarısı
+          light: '#718C02', // Yeni arka plan rengi
         },
         errorCorrectionLevel: 'H',
       });
@@ -340,7 +340,7 @@ export default function QRCodeList({ campaignId }: QRCodeListProps) {
         }
 
         // Sarı arka plan ekle (Snapchat sarısı)
-        ctx.fillStyle = '#FFFC00';
+        ctx.fillStyle = '#718C02';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
         // Yuvarlatılmış köşeler için
@@ -364,7 +364,7 @@ export default function QRCodeList({ campaignId }: QRCodeListProps) {
           margin: 2,
           color: {
             dark: '#000000',
-            light: '#FFFC00', // Snapchat sarısı
+            light: '#718C02', // Yeni arka plan rengi
           },
           errorCorrectionLevel: 'H',
         });
@@ -779,7 +779,7 @@ export default function QRCodeList({ campaignId }: QRCodeListProps) {
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-x-3">
-                      <div className="h-10 w-10 bg-[#FFFC00] dark:bg-[#FFFC00] rounded-lg p-1">
+                      <div className="h-10 w-10 bg-[#718C02] dark:bg-[#718C02] rounded-lg p-1">
                         <QRCodeSVG
                           value={getQRCodeUrl(qrCode.slug)}
                           size={32}
