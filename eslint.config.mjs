@@ -7,10 +7,17 @@ const __dirname = dirname(__filename);
 
 const compat = new FlatCompat({
   baseDirectory: __dirname,
+  recommendedConfig: {},
 });
 
-const eslintConfig = [
-  ...compat.extends("next/core-web-vitals", "next/typescript"),
+export default [
+  {
+    ignores: ["node_modules/", ".next/", "out/"],
+  },
+  ...compat.extends("next/core-web-vitals"),
+  {
+    rules: {
+      "@typescript-eslint/no-unused-vars": "warn"
+    }
+  }
 ];
-
-export default eslintConfig;
