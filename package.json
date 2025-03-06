@@ -23,6 +23,7 @@
     "bcrypt": "^5.1.1",
     "canvas-confetti": "^1.9.3",
     "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "file-saver": "^2.0.5",
     "jszip": "^3.10.1",
@@ -36,6 +37,7 @@
     "react-hook-form": "^7.54.2",
     "react-hot-toast": "^2.5.2",
     "resend": "^4.1.2",
+    "tailwind-merge": "^3.0.2",
     "zod": "^3.24.2"
   },
   "devDependencies": {
@@ -45,6 +47,8 @@
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "@typescript-eslint/eslint-plugin": "^8.26.0",
+    "@typescript-eslint/parser": "^8.26.0",
     "autoprefixer": "^10.4.14",
     "dotenv": "^16.4.7",
     "eslint": "^8",
