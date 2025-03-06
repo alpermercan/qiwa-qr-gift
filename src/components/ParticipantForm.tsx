@@ -97,7 +97,21 @@ export default function ParticipantForm({
       console.log('Campaign ID:', campaignId);
       console.log('QR Code ID:', qrCodeId);
 
-      // Önce kampanya güncelleme işlemini yap
+      // Önce QR kodu güncelle
+      const { error: qrUpdateError } = await supabase
+        .from('qr_codes')
+        .update({ 
+          is_used: true,
+          used_at: new Date().toISOString()
+        })
+        .eq('id', qrCodeId);
+
+      if (qrUpdateError) {
+        console.error('QR code update error:', qrUpdateError);
+        throw new Error(`QR kod güncellenemedi: ${qrUpdateError.message}`);
+      }
+
+      // Sonra kampanya güncelleme işlemini yap
       const { data: campaignUpdateData, error: campaignUpdateError } = await supabase.rpc(
         'decrement_campaign_uses',
         { campaign_id: campaignId }
@@ -106,16 +120,43 @@ export default function ParticipantForm({
       console.log('Campaign update result:', campaignUpdateData);
 
       if (campaignUpdateError) {
+        // QR kodu güncellemesini geri al
+        await supabase
+          .from('qr_codes')
+          .update({ 
+            is_used: false,
+            used_at: null
+          })
+          .eq('id', qrCodeId);
+
         console.error('Campaign update error:', campaignUpdateError);
         throw new Error(`Kampanya güncellenemedi: ${campaignUpdateError.message}`);
       }
 
       if (!campaignUpdateData) {
+        // QR kodu güncellemesini geri al
+        await supabase
+          .from('qr_codes')
+          .update({ 
+            is_used: false,
+            used_at: null
+          })
+          .eq('id', qrCodeId);
+
         console.error('No campaign update data returned');
         throw new Error('Kampanya bilgisi alınamadı. Lütfen daha sonra tekrar deneyin.');
       }
 
       if (!campaignUpdateData.success) {
+        // QR kodu güncellemesini geri al
+        await supabase
+          .from('qr_codes')
+          .update({ 
+            is_used: false,
+            used_at: null
+          })
+          .eq('id', qrCodeId);
+
         console.error('Campaign update failed:', campaignUpdateData);
         throw new Error(campaignUpdateData.error || 'Kampanya güncellenemedi. Lütfen daha sonra tekrar deneyin.');
       }
@@ -136,20 +177,38 @@ export default function ParticipantForm({
       console.log('Participant creation result:', participantData);
 
       if (participantError) {
+        // QR kodu güncellemesini geri al
+        await supabase
+          .from('qr_codes')
+          .update({ 
+            is_used: false,
+            used_at: null
+          })
+          .eq('id', qrCodeId);
         // Kampanya güncelleme işlemini geri al
         await supabase.rpc('increment_campaign_uses', { campaign_id: campaignId });
+
         console.error('Participant creation error details:', participantError);
         throw new Error(`Katılımcı kaydı oluşturulamadı: ${participantError.message}`);
       }
 
       if (!participantData) {
+        // QR kodu güncellemesini geri al
+        await supabase
+          .from('qr_codes')
+          .update({ 
+            is_used: false,
+            used_at: null
+          })
+          .eq('id', qrCodeId);
         // Kampanya güncelleme işlemini geri al
         await supabase.rpc('increment_campaign_uses', { campaign_id: campaignId });
+
         console.error('No participant data returned');
         throw new Error('Katılımcı kaydı oluşturuldu ancak veri dönmedi');
       }
 
-      // Kampanya katılımını oluştur
+      // Son olarak kampanya katılımını oluştur
       const { data: participationData, error: participationError } = await supabase
         .from('campaign_participations')
         .insert({
@@ -166,6 +225,14 @@ export default function ParticipantForm({
       console.log('Participation creation result:', participationData);
 
       if (participationError) {
+        // QR kodu güncellemesini geri al
+        await supabase
+          .from('qr_codes')
+          .update({ 
+            is_used: false,
+            used_at: null
+          })
+          .eq('id', qrCodeId);
         // Kampanya güncelleme işlemini geri al
         await supabase.rpc('increment_campaign_uses', { campaign_id: campaignId });
         // Katılımcıyı sil
@@ -176,34 +243,6 @@ export default function ParticipantForm({
           
         console.error('Participation creation error:', participationError);
         throw new Error(`Kampanya katılımı kaydedilemedi: ${participationError.message}`);
-      }
-
-      // Son olarak QR kodu güncelle
-      const { error: qrUpdateError } = await supabase
-        .from('qr_codes')
-        .update({ 
-          is_used: true,
-          used_at: new Date().toISOString(),
-          participant_id: participantData.id
-        })
-        .eq('id', qrCodeId);
-
-      if (qrUpdateError) {
-        // Kampanya güncelleme işlemini geri al
-        await supabase.rpc('increment_campaign_uses', { campaign_id: campaignId });
-        // Katılımı sil
-        await supabase
-          .from('campaign_participations')
-          .delete()
-          .eq('id', participationData.id);
-        // Katılımcıyı sil
-        await supabase
-          .from('campaign_participants')
-          .delete()
-          .eq('id', participantData.id);
-          
-        console.error('QR code update error:', qrUpdateError);
-        throw new Error(`QR kod güncellenemedi: ${qrUpdateError.message}`);
       }
 
       // Tüm işlemler başarılı oldu
