@@ -240,44 +240,50 @@ export default function QRCodeList({ campaignId }: QRCodeListProps) {
     try {
       const url = getQRCodeUrl(qrCode.slug);
       
-      // QR kodu SVG olarak oluştur
-      const qrCodeSvg = (
-        <QRCodeSVG
-          value={url}
-          size={1024}
-          level="H"
-          imageSettings={{
-            src: "/images/logo/qiwa-logo.svg",
-            height: 100,
-            width: 100,
-            excavate: true,
-          }}
-        />
-      );
-
-      // SVG'yi string'e dönüştür
-      const svgString = ReactDOMServer.renderToString(qrCodeSvg);
-      
-      // SVG'yi data URL'e dönüştür
-      const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
-      const svgUrl = URL.createObjectURL(svgBlob);
-      
-      // SVG'yi PNG'ye dönüştür
-      const img = new Image();
-      img.src = svgUrl;
-      
-      await new Promise((resolve, reject) => {
-        img.onload = resolve;
-        img.onerror = reject;
-      });
-      
+      // QR kodu oluştur
       const canvas = document.createElement('canvas');
       canvas.width = 1024;
       canvas.height = 1024;
-      const ctx = canvas.getContext('2d');
-      ctx?.drawImage(img, 0, 0);
       
-      // PNG'yi indir
+      // QR kodu canvas'a çiz
+      await QRCode.toCanvas(canvas, url, {
+        width: 1024,
+        margin: 4,
+        color: {
+          dark: '#000000',
+          light: '#ffffff',
+        },
+        errorCorrectionLevel: 'H',
+      });
+
+      // Logo ekle
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        throw new Error('Canvas context not available');
+      }
+
+      const logo = new Image();
+      logo.src = '/images/logo/qiwa-logo.svg';
+      
+      await new Promise((resolve, reject) => {
+        logo.onload = () => {
+          // Logo'yu ortala
+          const logoSize = 100;
+          const x = (canvas.width - logoSize) / 2;
+          const y = (canvas.height - logoSize) / 2;
+          
+          // Logo arkasına beyaz arka plan ekle
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(x - 10, y - 10, logoSize + 20, logoSize + 20);
+          
+          // Logo'yu çiz
+          ctx.drawImage(logo, x, y, logoSize, logoSize);
+          resolve(true);
+        };
+        logo.onerror = reject;
+      });
+
+      // PNG olarak indir
       const pngUrl = canvas.toDataURL('image/png');
       const link = document.createElement('a');
       link.href = pngUrl;
@@ -285,9 +291,6 @@ export default function QRCodeList({ campaignId }: QRCodeListProps) {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      
-      // Cleanup
-      URL.revokeObjectURL(svgUrl);
     } catch (error) {
       console.error('Error downloading QR code:', error);
       toast.error('QR kod indirilirken bir hata oluştu');
@@ -305,43 +308,49 @@ export default function QRCodeList({ campaignId }: QRCodeListProps) {
       const promises = selectedCodes.map(async (code) => {
         const url = getQRCodeUrl(code.slug);
         
-        // QR kodu SVG olarak oluştur
-        const qrCodeSvg = (
-          <QRCodeSVG
-            value={url}
-            size={1024}
-            level="H"
-            imageSettings={{
-              src: "/images/logo/qiwa-logo.svg",
-              height: 100,
-              width: 100,
-              excavate: true,
-            }}
-          />
-        );
-
-        // SVG'yi string'e dönüştür
-        const svgString = ReactDOMServer.renderToString(qrCodeSvg);
-        
-        // SVG'yi data URL'e dönüştür
-        const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
-        const svgUrl = URL.createObjectURL(svgBlob);
-        
-        // SVG'yi PNG'ye dönüştür
-        const img = new Image();
-        img.src = svgUrl;
-        
-        await new Promise((resolve, reject) => {
-          img.onload = resolve;
-          img.onerror = reject;
-        });
-        
+        // QR kodu oluştur
         const canvas = document.createElement('canvas');
         canvas.width = 1024;
         canvas.height = 1024;
-        const ctx = canvas.getContext('2d');
-        ctx?.drawImage(img, 0, 0);
         
+        // QR kodu canvas'a çiz
+        await QRCode.toCanvas(canvas, url, {
+          width: 1024,
+          margin: 4,
+          color: {
+            dark: '#000000',
+            light: '#ffffff',
+          },
+          errorCorrectionLevel: 'H',
+        });
+
+        // Logo ekle
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          throw new Error('Canvas context not available');
+        }
+
+        const logo = new Image();
+        logo.src = '/images/logo/qiwa-logo.svg';
+        
+        await new Promise((resolve, reject) => {
+          logo.onload = () => {
+            // Logo'yu ortala
+            const logoSize = 100;
+            const x = (canvas.width - logoSize) / 2;
+            const y = (canvas.height - logoSize) / 2;
+            
+            // Logo arkasına beyaz arka plan ekle
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(x - 10, y - 10, logoSize + 20, logoSize + 20);
+            
+            // Logo'yu çiz
+            ctx.drawImage(logo, x, y, logoSize, logoSize);
+            resolve(true);
+          };
+          logo.onerror = reject;
+        });
+
         // Canvas'ı blob'a dönüştür
         const blob = await new Promise<Blob>((resolve, reject) => {
           canvas.toBlob((blob) => {
@@ -355,9 +364,6 @@ export default function QRCodeList({ campaignId }: QRCodeListProps) {
         
         // Blob'u ZIP'e ekle
         zip.file(`qr-${code.slug}.png`, blob);
-        
-        // Cleanup
-        URL.revokeObjectURL(svgUrl);
       });
 
       await Promise.all(promises);
