@@ -274,7 +274,7 @@ export default function QRCodeList({ campaignId }: QRCodeListProps) {
         width: 800,
         margin: 2,
         color: {
-          dark: '#000000',
+          dark: '#FFFFFF',
           light: '#718C02', // Yeni arka plan rengi
         },
         errorCorrectionLevel: 'H',
@@ -363,7 +363,7 @@ export default function QRCodeList({ campaignId }: QRCodeListProps) {
           width: 800,
           margin: 2,
           color: {
-            dark: '#000000',
+            dark: '#FFFFFF',
             light: '#718C02', // Yeni arka plan rengi
           },
           errorCorrectionLevel: 'H',
