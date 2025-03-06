@@ -5,7 +5,6 @@ const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   compress: true,
-  swcMinify: true,
   images: {
     domains: ['qiwacoffee.co'],
     formats: ['image/avif', 'image/webp'],
