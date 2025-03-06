@@ -1,0 +1,109 @@
+<parameter name="command">pkill -f "next dev" && rm -rf .next node_modules package-lock.json</parameter>
+<parameter name="explanation">Stopping all Next.js servers and cleaning up the project</parameter>
+<parameter name="is_background">false</parameter>
+<parameter name="require_user_approval">true</parameter>
+</invoke>
+
+<invoke name="run_terminal_cmd">
+<parameter name="command">npm install next@latest && npm install -D tailwindcss@latest postcss@latest autoprefixer@latest</parameter>
+<parameter name="explanation">Installing the latest versions of Next.js and Tailwind CSS dependencies</parameter>
+<parameter name="is_background">false</parameter>
+<parameter name="require_user_approval">true</parameter>
+</invoke>
+
+<invoke name="edit_file">
+<parameter name="target_file">postcss.config.js</parameter>
+<parameter name="instructions">I will update the PostCSS configuration to use the new Tailwind CSS plugin format</parameter>
+<parameter name="code_edit">module.exports = {
+  plugins: {
+    'postcss-import': {},
+    'tailwindcss/nesting': {},
+    'tailwindcss': {},
+    'autoprefixer': {},
+  },
+}
+</parameter>
+</invoke>
+
+<invoke name="run_terminal_cmd">
+<parameter name="command">mv next.config.ts next.config.js</parameter>
+<parameter name="explanation">Renaming the Next.js configuration file from TypeScript to JavaScript format</parameter>
+<parameter name="is_background">false</parameter>
+<parameter name="require_user_approval">true</parameter>
+</invoke>
+
+<invoke name="run_terminal_cmd">
+<parameter name="command">npm install && npm run dev</parameter>
+<parameter name="explanation">Installing dependencies and starting the development server</parameter>
+<parameter name="is_background">true</parameter>
+<parameter name="require_user_approval">true</parameter>
+</invoke>
+
+<invoke name="run_terminal_cmd">
+<parameter name="command">npx tailwindcss init -p</parameter>
+<parameter name="explanation">Initializing Tailwind CSS configuration</parameter>
+<parameter name="is_background">false</parameter>
+<parameter name="require_user_approval">true</parameter>
+</invoke>
+
+<invoke name="run_terminal_cmd">
+<parameter name="command">npm run dev</parameter>
+<parameter name="explanation">Starting the development server</parameter>
+<parameter name="is_background">true</parameter>
+<parameter name="require_user_approval">true</parameter>
+</invoke> 
+<invoke name="run_terminal_cmd">
+<parameter name="command">pkill -f "next dev" && rm -rf .next node_modules package-lock.json</parameter>
+<parameter name="explanation">Stopping all Next.js servers and cleaning up the project</parameter>
+<parameter name="is_background">false</parameter>
+<parameter name="require_user_approval">true</parameter>
+</invoke>
+
+<invoke name="run_terminal_cmd">
+<parameter name="command">npm install -D tailwindcss@latest postcss@latest autoprefixer@latest @tailwindcss/postcss-8</parameter>
+<parameter name="explanation">Installing the latest versions of Tailwind CSS and its PostCSS plugin</parameter>
+<parameter name="is_background">false</parameter>
+<parameter name="require_user_approval">true</parameter>
+</invoke>
+
+<invoke name="edit_file">
+<parameter name="target_file">postcss.config.js</parameter>
+<parameter name="instructions">I will update the PostCSS configuration to use the new Tailwind CSS plugin format</parameter>
+<parameter name="code_edit">module.exports = {
+  plugins: {
+    'postcss-import': {},
+    'tailwindcss/nesting': {},
+    'tailwindcss': {},
+    'autoprefixer': {},
+  },
+}
+</parameter>
+</invoke>
+
+<invoke name="run_terminal_cmd">
+<parameter name="command">mv next.config.ts next.config.js</parameter>
+<parameter name="explanation">Renaming the Next.js configuration file from TypeScript to JavaScript format</parameter>
+<parameter name="is_background">false</parameter>
+<parameter name="require_user_approval">true</parameter>
+</invoke>
+
+<invoke name="run_terminal_cmd">
+<parameter name="command">npm install && npm run dev</parameter>
+<parameter name="explanation">Installing dependencies and starting the development server</parameter>
+<parameter name="is_background">true</parameter>
+<parameter name="require_user_approval">true</parameter>
+</invoke>
+
+<invoke name="run_terminal_cmd">
+<parameter name="command">npx tailwindcss init -p</parameter>
+<parameter name="explanation">Initializing Tailwind CSS configuration</parameter>
+<parameter name="is_background">false</parameter>
+<parameter name="require_user_approval">true</parameter>
+</invoke>
+
+<invoke name="run_terminal_cmd">
+<parameter name="command">npm run dev</parameter>
+<parameter name="explanation">Starting the development server</parameter>
+<parameter name="is_background">true</parameter>
+<parameter name="require_user_approval">true</parameter>
+</invoke> 
