@@ -122,7 +122,7 @@ export default function ParticipantForm({
 
       // Katılımcıyı oluştur
       const { data: participantData, error: participantError } = await supabase
-        .from('participants')
+        .from('campaign_participants')
         .insert({
           first_name: data.firstName.trim(),
           last_name: data.lastName.trim(),
@@ -170,7 +170,7 @@ export default function ParticipantForm({
         await supabase.rpc('increment_campaign_uses', { campaign_id: campaignId });
         // Katılımcıyı sil
         await supabase
-          .from('participants')
+          .from('campaign_participants')
           .delete()
           .eq('id', participantData.id);
           
@@ -198,7 +198,7 @@ export default function ParticipantForm({
           .eq('id', participationData.id);
         // Katılımcıyı sil
         await supabase
-          .from('participants')
+          .from('campaign_participants')
           .delete()
           .eq('id', participantData.id);
           
